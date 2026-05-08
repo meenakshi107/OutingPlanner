@@ -532,10 +532,10 @@ function buildQuestionCard(d, fsid) {
     const name    = "qdyn_" + fsid;
 
     let bodyHTML = `
-    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:.5rem;">
-     <h2>&#x1F4CB; ${escHtml(d.title)}</h2>
-            <button class="btn-remove-question" onclick="removeQuestion('${fsid}')">&#x2715; Remove</button>
-        </div>`;
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:.5rem;flex-wrap:wrap;">
+      <h2>&#x1F4CB; ${escHtml(d.title)}</h2>
+   <button type="button" class="btn-remove-question" data-qid="${fsid}">&#x1F5D1; Remove Question</button>
+ </div>`;
 
     if (d.type === "checkbox" || d.type === "radio") {
         bodyHTML += `<div class="chip-group" id="${groupId}">`;
@@ -608,8 +608,23 @@ function buildQuestionCard(d, fsid) {
 }
 
 /* -------------------------------------------------
-   REMOVE QUESTION
+   REMOVE QUESTION  —  event delegation
 ------------------------------------------------- */
+document.addEventListener("click", async function (e) {
+    const btn = e.target.closest(".btn-remove-question");
+    if (!btn) return;
+    const fsid = btn.dataset.qid;
+  if (!fsid) return;
+    if (!confirm("Remove this question from the poll for everyone?")) return;
+    try {
+      await deleteDoc(doc(db, "questions", fsid));
+    } catch (err) {
+   alert("Failed to remove question.");
+        console.error(err);
+    }
+});
+
+// Keep old window.removeQuestion as no-op for safety
 window.removeQuestion = async function (fsid) {
     if (!confirm("Remove this question from the poll for everyone?")) return;
     await deleteDoc(doc(db, "questions", fsid));
